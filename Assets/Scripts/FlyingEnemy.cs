@@ -17,6 +17,12 @@ public class FlyingEnemy : MonoBehaviour
     [SerializeField] private SpriteRenderer sr; // optional (for flip)
 
     private GameObject player;
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio")?.GetComponent<AudioManager>();
+    }
 
     void Start()
     {
@@ -74,7 +80,7 @@ public class FlyingEnemy : MonoBehaviour
         {
             // Stomp kill
             Destroy(gameObject);
-
+            audioManager.PlaySFX(audioManager.defeatEnemy);
             // Bounce player up
             if (playerRb != null)
                 playerRb.velocity = new Vector2(playerRb.velocity.x, bounceVelocity);

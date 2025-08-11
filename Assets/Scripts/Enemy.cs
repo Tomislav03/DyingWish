@@ -9,8 +9,15 @@ public class Enemy : MonoBehaviour
     [SerializeField] private Vector3 moveOffset;
     [SerializeField] private SpriteRenderer sr;
 
+    AudioManager audioManager;
+
     private Vector3 startPosition;
     private Vector3 targetPosition;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -57,6 +64,8 @@ public class Enemy : MonoBehaviour
                 if (dropper != null) dropper.TryDrop();
 
                 Destroy(gameObject);
+
+                audioManager.PlaySFX(audioManager.defeatEnemy);
 
                 Rigidbody2D playerRb = collision.GetComponent<Rigidbody2D>();
                 if (playerRb != null)

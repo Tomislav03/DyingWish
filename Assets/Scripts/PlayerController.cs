@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float climbSpeed = 4f;
     [SerializeField] private GameObject deathMessageUI;
 
+    AudioManager audioManager;
+
     public SpriteRenderer sr;
     private bool isGrounded;
     public static int score;
@@ -23,6 +25,11 @@ public class PlayerController : MonoBehaviour
     private Vector3 respawnPoint;
     private bool isClimbing = false;
     private bool isOnLadder = false;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -49,6 +56,7 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, 0); // reset Y velocity
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             jumpCount++;
+            audioManager.PlaySFX(audioManager.jump);
             
             if(jumpCount == 1)
             {
@@ -122,13 +130,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        /*if (Vector2.Dot(collision.GetContact(0).normal, Vector2.up) > 0.8f)  
-        { 
-            isGrounded = true;
-            animator.SetBool("isJumping", false);
-            animator.SetBool("isFalling", false);
-        }*/
-
         if (Vector2.Dot(collision.GetContact(0).normal, Vector2.up) > 0.8f)
         {
             isGrounded = true;

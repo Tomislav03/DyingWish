@@ -175,7 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedMultiplier: 1.5
   duration: 5
-  pickupDelay: 1
+  pickupDelay: 0.5
   pickupTrigger: {fileID: 5734283297718641412}
 --- !u!95 &6881422207145181717
 Animator:

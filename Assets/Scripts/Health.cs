@@ -7,6 +7,8 @@ public class Health : MonoBehaviour
     [SerializeField] private float startingHealth = 3f;
     [SerializeField] private float hitStopDuration = 0.08f; // tweak: 0.05–0.12 feels good
     [SerializeField] private float iFramesDuration = 1f;
+
+    AudioManager audioManager;
     public float currentHealth { get; private set; }
     private bool isHitStopping = false;
     private bool isInvincible = false;
@@ -14,6 +16,7 @@ public class Health : MonoBehaviour
     private void Awake()
     {
         currentHealth = startingHealth;
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
     }
 
     public void TakeDamage(float damage)
@@ -32,17 +35,22 @@ public class Health : MonoBehaviour
             var camShake = Camera.main != null ? Camera.main.GetComponent<CameraShake>() : null;
             if (camShake != null)
                 StartCoroutine(camShake.Shake(0.15f, 0.1f)); // duration, magnitude
-
             Debug.Log("Player took damage. Remaining: " + currentHealth);
+
+            audioManager.PlaySFX(audioManager.hit);
         }
         else
         {
             // Player dead — show death screen (it does its own freeze)
             Debug.Log("Player died!");
+            var audio = GameObject.FindGameObjectWithTag("Audio")?.GetComponent<AudioManager>();
+            if (audio != null) audio.StopMusic();
+
             PlayerController controller = GetComponent<PlayerController>();
             if (controller != null)
             {
                 controller.ShowDeathMessage();
+                audioManager.PlaySFX(audioManager.death);
             }
         }
     }
@@ -72,6 +80,7 @@ public class Health : MonoBehaviour
     public void AddHealth(float amount)
     {
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, startingHealth);
+        audioManager.PlaySFX(audioManager.GetHeart);
         Debug.Log("Gained health. Current: " + currentHealth);
     }
 }

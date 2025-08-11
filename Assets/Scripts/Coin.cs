@@ -9,8 +9,13 @@ public class Coin : MonoBehaviour
     [SerializeField] private float floatSpeed;
 
     private float startYPosition;
-    
 
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
 
     private void Start()
     {
@@ -29,6 +34,7 @@ public class Coin : MonoBehaviour
         {
             collision.GetComponent<PlayerController>().AddScore(scoreToGive);
             Destroy(gameObject);
+            audioManager.PlaySFX(audioManager.coin);
         }
     }
 }
