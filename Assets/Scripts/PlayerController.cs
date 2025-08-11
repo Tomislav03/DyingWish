@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
             Health health = GetComponent<Health>();
             if (health != null)
             {
-                health.TakeDamage(1);
+                health.TakeDamage(1f);
                 Respawn();
             }
         }

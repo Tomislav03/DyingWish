@@ -44,14 +44,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /*private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Player"))
-        {
-            collision.GetComponent<PlayerController>().GameOver();
-        }
-    }*/
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
@@ -60,12 +52,16 @@ public class Enemy : MonoBehaviour
 
             if (contactPoint.y > 0.5f)
             {
+                // DROP POWERUP HERE
+                var dropper = GetComponent<LootDropper>();
+                if (dropper != null) dropper.TryDrop();
+
                 Destroy(gameObject);
 
                 Rigidbody2D playerRb = collision.GetComponent<Rigidbody2D>();
                 if (playerRb != null)
                 {
-                    playerRb.velocity = new Vector2(playerRb.velocity.x, 8f); // bounce up
+                    playerRb.velocity = new Vector2(playerRb.velocity.x, 8f);
                 }
             }
             else
@@ -73,7 +69,7 @@ public class Enemy : MonoBehaviour
                 Health playerHealth = collision.GetComponent<Health>();
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(1);
+                    playerHealth.TakeDamage(1f);
                 }
             }
         }
