@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 respawnPoint;
     private bool isClimbing = false;
     private bool isOnLadder = false;
+    private float baseJumpForce;
+    private int activeJumpBoost;
 
     private void Awake()
     {
@@ -37,6 +39,7 @@ public class PlayerController : MonoBehaviour
         respawnPoint = transform.position;
         scoreText.text = "Coins : " + score;
         deathMessageUI.SetActive(false);
+        baseJumpForce = jumpForce;
 
         // UpdateUI();
     }
@@ -211,5 +214,19 @@ public class PlayerController : MonoBehaviour
 
         Time.timeScale = 1f; // Unfreeze the game before restart
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public IEnumerator TemporaryJumpBoost(float multiplier, float seconds)
+    {
+        if (activeJumpBoost == 0) baseJumpForce = jumpForce;
+
+        activeJumpBoost++;
+        jumpForce = baseJumpForce * multiplier;
+
+        yield return new WaitForSeconds(seconds);
+
+        activeJumpBoost = Mathf.Max(0, activeJumpBoost - 1);
+        if (activeJumpBoost == 0)
+            jumpForce = baseJumpForce;
     }
 }

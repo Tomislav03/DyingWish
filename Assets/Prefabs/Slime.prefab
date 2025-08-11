@@ -110,7 +110,8 @@ MonoBehaviour:
   dropChance: 0.2
   powerups:
   - {fileID: 1730372864596554955, guid: 1906bcf17c61da042994b20f0279d4fc, type: 3}
-  spawnOffset: {x: 0, y: 0.5}
+  - {fileID: 8477206231145913283, guid: 4429b59cd9712e543861323571eeb45c, type: 3}
+  spawnOffset: {x: 0, y: 1}
 --- !u!1 &4156125922357631474
 GameObject:
   m_ObjectHideFlags: 0
