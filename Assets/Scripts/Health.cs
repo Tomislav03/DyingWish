@@ -1,38 +1,56 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections; // <- make sure this is here for IEnumerator
 
 public class Health : MonoBehaviour
 {
     [SerializeField] private float startingHealth = 3f;
+    [SerializeField] private float hitStopDuration = 0.08f; // tweak: 0.05–0.12 feels good
     public float currentHealth { get; private set; }
+
+    private bool isHitStopping = false;
 
     private void Awake()
     {
         currentHealth = startingHealth;
     }
 
-    public void TakeDamage(float _damage)
+    public void TakeDamage(float damage)
     {
-        currentHealth = Mathf.Clamp(currentHealth - _damage, 0, startingHealth);
+        currentHealth = Mathf.Clamp(currentHealth - damage, 0, startingHealth);
 
         if (currentHealth > 0)
         {
-            // Optional: flash effect or hurt animation
+            // brief freeze when hurt
+            if (!isHitStopping) StartCoroutine(HitStopRoutine(hitStopDuration));
+            var camShake = Camera.main != null ? Camera.main.GetComponent<CameraShake>() : null;
+            if (camShake != null)
+                StartCoroutine(camShake.Shake(0.15f, 0.1f)); // duration, magnitude
+
             Debug.Log("Player took damage. Remaining: " + currentHealth);
         }
         else
         {
-            // Player dead
+            // Player dead — show death screen (it does its own freeze)
             Debug.Log("Player died!");
-
             PlayerController controller = GetComponent<PlayerController>();
             if (controller != null)
             {
                 controller.ShowDeathMessage();
-                /*controller.ResetScore(); // optional
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);*/
             }
         }
+    }
+
+    private IEnumerator HitStopRoutine(float duration)
+    {
+        isHitStopping = true;
+        float prevScale = Time.timeScale;
+
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(duration); // unaffected by timeScale = 0
+        Time.timeScale = prevScale;
+
+        isHitStopping = false;
     }
 
     public void AddHealth(float amount)
@@ -40,5 +58,4 @@ public class Health : MonoBehaviour
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, startingHealth);
         Debug.Log("Gained health. Current: " + currentHealth);
     }
-
 }
