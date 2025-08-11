@@ -33,6 +33,7 @@ public class Coin : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             collision.GetComponent<PlayerController>().AddScore(scoreToGive);
+            SaveManager.I?.AddCoins(scoreToGive);
             Destroy(gameObject);
             audioManager.PlaySFX(audioManager.coin);
         }
