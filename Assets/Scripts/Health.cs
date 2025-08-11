@@ -6,9 +6,10 @@ public class Health : MonoBehaviour
 {
     [SerializeField] private float startingHealth = 3f;
     [SerializeField] private float hitStopDuration = 0.08f; // tweak: 0.05–0.12 feels good
+    [SerializeField] private float iFramesDuration = 1f;
     public float currentHealth { get; private set; }
-
     private bool isHitStopping = false;
+    private bool isInvincible = false;
 
     private void Awake()
     {
@@ -17,10 +18,15 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        if (isInvincible)
+        {
+            return;
+        }
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, startingHealth);
 
         if (currentHealth > 0)
         {
+            StartCoroutine(InvincibilityRoutine());
             // brief freeze when hurt
             if (!isHitStopping) StartCoroutine(HitStopRoutine(hitStopDuration));
             var camShake = Camera.main != null ? Camera.main.GetComponent<CameraShake>() : null;
@@ -52,6 +58,16 @@ public class Health : MonoBehaviour
 
         isHitStopping = false;
     }
+
+    private IEnumerator InvincibilityRoutine()
+    {
+        isInvincible = true;
+
+        yield return new WaitForSeconds(iFramesDuration);
+
+        isInvincible = false;
+    }
+
 
     public void AddHealth(float amount)
     {
