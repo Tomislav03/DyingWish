@@ -8,6 +8,8 @@ public class Health : MonoBehaviour
     [SerializeField] private float hitStopDuration = 0.08f; // tweak: 0.05–0.12 feels good
     [SerializeField] private float iFramesDuration = 1f;
 
+    [SerializeField] private float spawnProtectionDuration = 0.75f; // tweak 0.3–1.0s
+
     AudioManager audioManager;
     public float currentHealth { get; private set; }
     private bool isHitStopping = false;
@@ -17,6 +19,14 @@ public class Health : MonoBehaviour
     {
         currentHealth = startingHealth;
         audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
+
+    private void Start()
+    {
+        if (spawnProtectionDuration > 0f)
+        {
+            StartCoroutine(SpawnProtection());
+        }
     }
 
     public void TakeDamage(float damage)
@@ -73,6 +83,13 @@ public class Health : MonoBehaviour
 
         yield return new WaitForSeconds(iFramesDuration);
 
+        isInvincible = false;
+    }
+
+    private IEnumerator SpawnProtection()
+    {
+        isInvincible = true;
+        yield return new WaitForSeconds(spawnProtectionDuration);
         isInvincible = false;
     }
 

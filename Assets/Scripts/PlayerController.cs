@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private int maxJumps = 2;
     [SerializeField] private float climbSpeed = 4f;
+    [SerializeField] private float extraLift = 0.1f; // small safety margin
     [SerializeField] private GameObject deathMessageUI;
 
     AudioManager audioManager;
@@ -47,13 +48,6 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*if (Input.GetKeyDown(KeyCode.Space) && isGrounded == true) 
-        {
-            isGrounded = false;
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            animator.SetBool("isJumping", true);
-        } */
-
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
         {
             rb.velocity = new Vector2(rb.velocity.x, 0); // reset Y velocity
@@ -190,7 +184,21 @@ public class PlayerController : MonoBehaviour
     public void Respawn()
     {
         rb.velocity = Vector2.zero;
-        transform.position = respawnPoint; // checkpoint position
+        rb.angularVelocity = 0f;
+
+        float halfHeight = 0.5f;
+        var col = GetComponent<Collider2D>();
+        if (col != null) halfHeight = col.bounds.extents.y;
+        transform.position = respawnPoint + new Vector3(0f, halfHeight + extraLift, 0f);
+
+        isOnLadder = false;
+        isClimbing = false;
+        jumpCount = 0;
+        isGrounded = false;
+
+        animator.SetBool("isRunning", false);
+        animator.SetBool("isJumping", false);
+        animator.SetBool("isFalling", false);
     }
 
     public void ShowDeathMessage()
