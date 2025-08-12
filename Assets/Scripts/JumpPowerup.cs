@@ -1,49 +1,215 @@
 using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using TMPro;
 
-[RequireComponent(typeof(Rigidbody2D))]
-public class JumpBoostPickup : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
-    [Header("Effect")]
-    [SerializeField] private float jumpMultiplier = 1.5f;
-    [SerializeField] private float duration = 5f;
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private float jumpForce;
+    [SerializeField] private Animator animator;
+    [SerializeField] private int maxJumps = 2;
+    [SerializeField] private float climbSpeed = 4f;
+    [SerializeField] private GameObject deathMessageUI;
 
-    [Header("Pickup")]
-    [SerializeField] private float pickupDelay = 1f;     // grace period
-    [SerializeField] private Collider2D pickupTrigger;   // assign a child trigger collider
+    public SpriteRenderer sr;
+    private bool isGrounded;
+    public static int score;
+    public TextMeshProUGUI scoreText;
+    private int jumpCount = 0;
+    private Vector3 respawnPoint;
+    private bool isClimbing = false;
+    private bool isOnLadder = false;
 
-    private bool canPickup = false;
+    // Ladder jump detachment (prevents half-jumps when leaving ladder)
+    [SerializeField] private float ladderJumpDetachTime = 0.15f; // short cooldown after jump
+    private float ladderDetachTimer = 0f;
 
-    private void Awake()
+    // Start is called before the first frame update
+    void Start()
     {
-        if (pickupTrigger != null) pickupTrigger.enabled = false;
-        StartCoroutine(EnablePickupAfterDelay());
+        respawnPoint = transform.position;
+        scoreText.text = "Coins : " + score;
+        deathMessageUI.SetActive(false);
+        // UpdateUI();
     }
 
-    private IEnumerator EnablePickupAfterDelay()
+    // Update is called once per frame
+    void Update()
     {
-        yield return new WaitForSeconds(pickupDelay);
-        canPickup = true;
-        if (pickupTrigger != null) pickupTrigger.enabled = true;
-    }
+        // tick the ladder detach cooldown
+        if (ladderDetachTimer > 0f) ladderDetachTimer -= Time.deltaTime;
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!canPickup || !other.CompareTag("Player")) return;
-
-        var pc = other.GetComponent<PlayerController>();
-        if (pc != null)
+        if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumps)
         {
-            // start the boost
-            pc.StartCoroutine(pc.TemporaryJumpBoost(jumpMultiplier, duration));
+            // detach from ladder before jumping so ladder logic doesn't cancel jump
+            if (isOnLadder || isClimbing)
+            {
+                isClimbing = false;      // keep isOnLadder true; just stop climbing
+                rb.gravityScale = 3f;    // restore gravity (matches your original)
+                ladderDetachTimer = ladderJumpDetachTime;
+            }
+
+            rb.velocity = new Vector2(rb.velocity.x, 0); // reset Y velocity
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            jumpCount++;
+
+            if (jumpCount == 1)
+            {
+                animator.SetBool("isJumping", true);
+            }
         }
 
-        Destroy(gameObject);
+        if (transform.position.y < -10)
+        {
+            Health health = GetComponent<Health>();
+            if (health != null)
+            {
+                health.TakeDamage(1f);
+                Respawn();
+            }
+        }
+
+        bool falling = !isGrounded && rb.velocity.y < -0.1f;
+        animator.SetBool("isFalling", falling);
     }
 
-    private IEnumerator DestroyAfter(GameObject obj, float t)
+    private void FixedUpdate() // runs at a fixed time rate
     {
-        yield return new WaitForSeconds(t);
-        if (obj != null) Destroy(obj);
+        float moveInput = Input.GetAxisRaw("Horizontal");
+
+        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+
+        if (moveInput != 0)
+        {
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            animator.SetBool("isRunning", false);
+        }
+
+        if (rb.velocity.x > 0)
+        {
+            sr.flipX = false;
+        }
+        else if (rb.velocity.x < 0)
+        {
+            sr.flipX = true;
+        }
+
+        // Ladder logic only when cooldown is over
+        if (isOnLadder && ladderDetachTimer <= 0f)
+        {
+            float verticalInput = Input.GetAxisRaw("Vertical");
+
+            if (Mathf.Abs(verticalInput) > 0.1f)
+            {
+                isClimbing = true;
+            }
+
+            if (isClimbing)
+            {
+                rb.gravityScale = 0f; // turn off gravity
+                rb.velocity = new Vector2(rb.velocity.x, verticalInput * climbSpeed);
+            }
+        }
+        else
+        {
+            // Reset when not on ladder or during detach cooldown
+            if (isClimbing)
+            {
+                rb.gravityScale = 3f; // restore gravity (adjust as needed)
+                isClimbing = false;
+            }
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (Vector2.Dot(collision.GetContact(0).normal, Vector2.up) > 0.8f)
+        {
+            isGrounded = true;
+            jumpCount = 0; // reset jump count
+            animator.SetBool("isJumping", false); // optional
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Ladder"))
+        {
+            isOnLadder = true;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Ladder"))
+        {
+            isOnLadder = false;
+        }
+    }
+
+    public void GameOver() // function is public so you can call it outside of the PlayerController script
+    {
+        Respawn();
+    }
+
+    public void AddScore(int amount)
+    {
+        score += amount;
+        scoreText.text = "Coins : " + score;
+
+        if (score % 10 == 0)
+        {
+            Health health = GetComponent<Health>();
+            if (health != null)
+            {
+                health.AddHealth(1f); // Gain 1 heart every 10 coins
+            }
+        }
+    }
+
+    public void ResetScore()
+    {
+        score = 0;
+    }
+
+    public void SetCheckpoint(Vector3 newCheckpoint)
+    {
+        respawnPoint = newCheckpoint;
+    }
+
+    public void Respawn()
+    {
+        rb.velocity = Vector2.zero;
+        transform.position = respawnPoint; // checkpoint position
+    }
+
+    public void ShowDeathMessage()
+    {
+        deathMessageUI.SetActive(true);     // Show the message
+        Time.timeScale = 0f;
+        StartCoroutine(WaitForKeyToRestart());
+    }
+
+    private IEnumerator WaitForKeyToRestart()
+    {
+        yield return new WaitForSecondsRealtime(1f); // short dramatic pause
+
+        // Wait until player presses any key
+        while (!Input.anyKeyDown)
+        {
+            yield return null;
+        }
+
+        score = 0;
+
+        Time.timeScale = 1f; // Unfreeze the game before restart
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
