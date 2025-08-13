@@ -12,7 +12,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private Animator animator;
     [SerializeField] private int maxJumps = 2;
-    [SerializeField] private float climbSpeed = 4f;
     [SerializeField] private float extraLift = 0.1f; // small safety margin
     [SerializeField] private GameObject deathMessageUI;
 
@@ -24,8 +23,8 @@ public class PlayerController : MonoBehaviour
     public TextMeshProUGUI scoreText;
     private int jumpCount = 0;
     private Vector3 respawnPoint;
-    private bool isClimbing = false;
-    private bool isOnLadder = false;
+
+    // kept from your file (not ladder-related)
     private float baseJumpForce;
     private int activeJumpBoost;
 
@@ -41,7 +40,6 @@ public class PlayerController : MonoBehaviour
         scoreText.text = "Coins : " + score;
         deathMessageUI.SetActive(false);
         baseJumpForce = jumpForce;
-
         // UpdateUI();
     }
 
@@ -54,11 +52,9 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             jumpCount++;
             audioManager.PlaySFX(audioManager.jump);
-            
-            if(jumpCount == 1)
-            {
+
+            if (jumpCount == 1)
                 animator.SetBool("isJumping", true);
-            }
         }
 
         if (transform.position.y < -10)
@@ -81,48 +77,14 @@ public class PlayerController : MonoBehaviour
 
         rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
 
-        if(moveInput != 0)
-        {
-            animator.SetBool("isRunning", true);
-        }
-        else
-        {
-            animator.SetBool("isRunning", false);
-        }
+        animator.SetBool("isRunning", moveInput != 0);
 
         if (rb.velocity.x > 0)
-        {
             sr.flipX = false;
-        }
         else if (rb.velocity.x < 0)
-        {
             sr.flipX = true;
-        }
 
-        if (isOnLadder)
-        {
-            float verticalInput = Input.GetAxisRaw("Vertical");
-
-            if (Mathf.Abs(verticalInput) > 0.1f)
-            {
-                isClimbing = true;
-            }
-
-            if (isClimbing)
-            {
-                rb.gravityScale = 0f; // turn off gravity
-                rb.velocity = new Vector2(rb.velocity.x, verticalInput * climbSpeed);
-            }
-        }
-        else
-        {
-            // Reset when not on ladder
-            if (isClimbing)
-            {
-                rb.gravityScale = 3f; // restore gravity (adjust as needed)
-                isClimbing = false;
-            }
-        }
+        // (ladder logic removed)
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -135,21 +97,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Ladder"))
-        {
-            isOnLadder = true;
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Ladder"))
-        {
-            isOnLadder = false;
-        }
-    }
+    // (ladder trigger handlers removed)
 
     public void GameOver() // function is public so you can call it outside of the PlayerController script
     {
@@ -165,9 +113,7 @@ public class PlayerController : MonoBehaviour
         {
             Health health = GetComponent<Health>();
             if (health != null)
-            {
                 health.AddHealth(1f); // Gain 1 heart every 10 coins
-            }
         }
     }
 
@@ -191,11 +137,11 @@ public class PlayerController : MonoBehaviour
         if (col != null) halfHeight = col.bounds.extents.y;
         transform.position = respawnPoint + new Vector3(0f, halfHeight + extraLift, 0f);
 
-        isOnLadder = false;
-        isClimbing = false;
-        jumpCount = 0;
-        isGrounded = false;
+        // (ladder flags removed)
+        // isOnLadder = false;
+        // isClimbing = false;
 
+        isGrounded = false;
         animator.SetBool("isRunning", false);
         animator.SetBool("isJumping", false);
         animator.SetBool("isFalling", false);
@@ -214,9 +160,7 @@ public class PlayerController : MonoBehaviour
 
         // Wait until player presses any key
         while (!Input.anyKeyDown)
-        {
             yield return null;
-        }
 
         score = 0;
 
@@ -224,6 +168,7 @@ public class PlayerController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    // kept from your file (not ladder-related)
     public IEnumerator TemporaryJumpBoost(float multiplier, float seconds)
     {
         if (activeJumpBoost == 0) baseJumpForce = jumpForce;
