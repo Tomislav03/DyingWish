@@ -9,8 +9,8 @@ public class JumpBoostPickup : MonoBehaviour
     [SerializeField] private float duration = 5f;
 
     [Header("Pickup")]
-    [SerializeField] private float pickupDelay = 1f;     // grace period
-    [SerializeField] private Collider2D pickupTrigger;   // assign a child trigger collider
+    [SerializeField] private float pickupDelay = 1f;     
+    [SerializeField] private Collider2D pickupTrigger;   
 
     private bool canPickup = false;
 
@@ -39,11 +39,5 @@ public class JumpBoostPickup : MonoBehaviour
         }
 
         Destroy(gameObject);
-    }
-
-    private IEnumerator DestroyAfter(GameObject obj, float t)
-    {
-        yield return new WaitForSeconds(t);
-        if (obj != null) Destroy(obj);
     }
 }

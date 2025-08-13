@@ -17,7 +17,6 @@ public class PatrollingEnemy : MonoBehaviour
         Transform targetPoint = patrolPoints[currentPointIndex];
         transform.position = Vector2.MoveTowards(transform.position, targetPoint.position, moveSpeed * Time.deltaTime);
 
-        // Flip sprite (optional)
         if (sr != null && targetPoint.position.x != transform.position.x)
         {
             sr.flipX = targetPoint.position.x < transform.position.x;

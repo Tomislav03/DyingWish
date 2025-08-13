@@ -14,21 +14,23 @@ public class Checkpoint : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (activated) return;                   // already used
+        if (activated) 
+        { 
+            return;           
+        }
 
         if (collision.CompareTag("Player"))
         {
             var player = collision.GetComponent<PlayerController>();
             if (player == null) return;
 
-            activated = true;                    // mark as used
+            activated = true;                 
 
             player.SetCheckpoint(transform.position);
             if (audioManager != null)
                 audioManager.PlaySFX(audioManager.checkpoint);
 
-            if (col != null) col.enabled = false; // optional: stop future triggers
-            // Optional: change sprite to a "used" look here
+            if (col != null) col.enabled = false; 
         }
     }
 }

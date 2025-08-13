@@ -1,18 +1,17 @@
 using UnityEngine;
-using TMPro;                 // remove this and use UnityEngine.UI.Text if you use legacy Text
+using TMPro;              
 
 public class MainMenuCoinsUI : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI coinsText;   // drag your TMP text here
-    [SerializeField] private string prefix = "Total Coins: ";
+    [SerializeField] private TextMeshProUGUI coinsText; 
+    [SerializeField] private string prefix;
 
     private void OnEnable()
     {
-        // Subscribe so it live-updates (e.g., after pressing your Reset button)
-        if (SaveManager.I != null)
-            SaveManager.I.OnTotalCoinsChanged += OnTotalCoinsChanged;
-
-        // Also refresh immediately when the menu opens
+        if (SaveManager.I != null) 
+        { 
+            SaveManager.I.OnTotalCoinsChanged += OnTotalCoinsChanged;       
+        }
         RefreshNow();
     }
 
@@ -32,7 +31,9 @@ public class MainMenuCoinsUI : MonoBehaviour
 
     private void SetText(int value)
     {
-        if (coinsText != null)
-            coinsText.text = $"{prefix}{value:N0}"; // N0 adds thousands separators (1,234)
+        if (coinsText != null) 
+        { 
+            coinsText.text = $"{prefix}{value:N0}";
+        }
     }
 }

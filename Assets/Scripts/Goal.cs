@@ -15,7 +15,7 @@ public class Goal : MonoBehaviour
             if(finalLevel == true)
             {
                 collision.GetComponent<PlayerController>().ResetScore();
-                SceneManager.LoadScene(0); // loads Main Menu scene
+                SceneManager.LoadScene(0); 
             }
             else
             {

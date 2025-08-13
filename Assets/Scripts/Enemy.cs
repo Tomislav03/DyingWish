@@ -59,7 +59,6 @@ public class Enemy : MonoBehaviour
 
             if (contactPoint.y > 0.5f)
             {
-                // DROP POWERUP HERE
                 var dropper = GetComponent<LootDropper>();
                 if (dropper != null) dropper.TryDrop();
 

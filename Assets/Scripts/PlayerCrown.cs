@@ -3,12 +3,12 @@ using UnityEngine;
 public class PlayerCrown : MonoBehaviour
 {
     [Header("Unlock")]
-    [SerializeField] private int coinThreshold = 1;  // set your target here
+    [SerializeField] private int coinThreshold = 1;
 
     [Header("Visuals")]
-    [SerializeField] private GameObject crownObject;  // child object with a SpriteRenderer
-    [SerializeField] private Animator animator;       // optional
-    [SerializeField] private string hasCrownBool = "HasCrown"; // optional animator bool
+    [SerializeField] private GameObject crownObject;  
+    [SerializeField] private Animator animator;     
+    [SerializeField] private string hasCrownBool = "HasCrown"; 
 
     private void OnEnable()
     {

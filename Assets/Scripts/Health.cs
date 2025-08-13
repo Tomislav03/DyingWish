@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections; // <- make sure this is here for IEnumerator
+using System.Collections; 
 
 public class Health : MonoBehaviour
 {
     [SerializeField] private float startingHealth = 3f;
-    [SerializeField] private float hitStopDuration = 0.08f; // tweak: 0.05–0.12 feels good
+    [SerializeField] private float hitStopDuration = 0.08f;
     [SerializeField] private float iFramesDuration = 1f;
 
-    [SerializeField] private float spawnProtectionDuration = 0.75f; // tweak 0.3–1.0s
+    [SerializeField] private float spawnProtectionDuration = 0.75f;
 
     AudioManager audioManager;
     public float currentHealth { get; private set; }
@@ -44,14 +44,13 @@ public class Health : MonoBehaviour
             if (!isHitStopping) StartCoroutine(HitStopRoutine(hitStopDuration));
             var camShake = Camera.main != null ? Camera.main.GetComponent<CameraShake>() : null;
             if (camShake != null)
-                StartCoroutine(camShake.Shake(0.15f, 0.1f)); // duration, magnitude
+                StartCoroutine(camShake.Shake(0.15f, 0.1f));
             Debug.Log("Player took damage. Remaining: " + currentHealth);
 
             audioManager.PlaySFX(audioManager.hit);
         }
         else
         {
-            // Player dead — show death screen (it does its own freeze)
             Debug.Log("Player died!");
             var audio = GameObject.FindGameObjectWithTag("Audio")?.GetComponent<AudioManager>();
             if (audio != null) audio.StopMusic();
@@ -71,7 +70,7 @@ public class Health : MonoBehaviour
         float prevScale = Time.timeScale;
 
         Time.timeScale = 0f;
-        yield return new WaitForSecondsRealtime(duration); // unaffected by timeScale = 0
+        yield return new WaitForSecondsRealtime(duration);
         Time.timeScale = prevScale;
 
         isHitStopping = false;

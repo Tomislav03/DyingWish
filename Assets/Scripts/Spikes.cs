@@ -21,11 +21,6 @@ public class Spikes : MonoBehaviour
                 playerHealth.TakeDamage(1);
                 audioManager.PlaySFX(audioManager.spikes);
             }
-
-            if (playerController != null)
-            {
-                playerController.Respawn();
-            }
         }
     }
 }

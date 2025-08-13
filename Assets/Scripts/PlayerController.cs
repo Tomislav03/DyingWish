@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private Animator animator;
     [SerializeField] private int maxJumps = 2;
-    [SerializeField] private float extraLift = 0.1f; // small safety margin
+    [SerializeField] private float extraLift = 0.1f;
     [SerializeField] private GameObject deathMessageUI;
 
     AudioManager audioManager;

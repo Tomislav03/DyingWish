@@ -6,21 +6,21 @@ public class SeekerEnemy : MonoBehaviour
     public enum State { Idle, Chasing, Returning }
 
     [Header("Detection")]
-    [SerializeField] private float aggroRadius = 6f;       // start chasing when inside this
-    [SerializeField] private float deAggroRadius = 6.5f;   // stop chasing when outside this (slightly larger to avoid flicker)
+    [SerializeField] private float aggroRadius = 6f;    
+    [SerializeField] private float deAggroRadius = 6.5f; 
 
     [Header("Movement")]
     [SerializeField] private float speed = 2f;
-    [SerializeField] private bool airMovement = true;      // if false, only move along X (grounded feel)
+    [SerializeField] private bool airMovement = true; 
     [SerializeField] private float arriveThreshold = 0.05f;
 
     [Header("Player Interaction")]
-    [SerializeField] private float stompHeightThreshold = 0.5f; // how much above this enemy the player must be
+    [SerializeField] private float stompHeightThreshold = 0.5f; 
     [SerializeField] private float bounceVelocity = 8f;
     [SerializeField] private int damage = 1;
 
     [Header("Visuals")]
-    [SerializeField] private SpriteRenderer sr; // optional; auto-fills if left empty
+    [SerializeField] private SpriteRenderer sr; 
 
     AudioManager audioManager;
 
@@ -32,21 +32,14 @@ public class SeekerEnemy : MonoBehaviour
     {
         audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
 
-        if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
-
-        // Make sure we render above tiles (optional, but avoids “invisible” issues)
-        if (sr != null)
-        {
-            // Adjust these to your project’s layers if needed:
-            // sr.sortingLayerName = "Characters";
-            // sr.sortingOrder = 5;
+        if (sr == null) 
+        { 
+            sr = GetComponentInChildren<SpriteRenderer>();
         }
 
-        // Make this collider a trigger for easy stomp/damage detection
         var col = GetComponent<Collider2D>();
         col.isTrigger = true;
 
-        // Kinematic RB helps moving triggers behave consistently (optional but recommended)
         if (GetComponent<Rigidbody2D>() == null)
         {
             var rb = gameObject.AddComponent<Rigidbody2D>();
@@ -65,7 +58,6 @@ public class SeekerEnemy : MonoBehaviour
 
     private void Update()
     {
-        // Keep on 2D plane
         if (Mathf.Abs(transform.position.z) > 0.0001f)
             transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
 
@@ -89,7 +81,6 @@ public class SeekerEnemy : MonoBehaviour
                 break;
         }
 
-        // Move based on state
         if (state == State.Chasing)
             MoveTowards(player.position);
         else if (state == State.Returning)
@@ -101,38 +92,41 @@ public class SeekerEnemy : MonoBehaviour
         Vector3 from = transform.position;
         Vector3 to = target;
 
-        if (!airMovement) // ground-style: follow only on X
+        if (!airMovement) 
+        { 
             to = new Vector3(target.x, transform.position.y, 0f);
+        }
 
         Vector3 next = Vector2.MoveTowards(from, to, speed * Time.deltaTime);
         transform.position = next;
 
-        // Flip sprite to face movement
         if (sr != null)
         {
             float dx = next.x - from.x;
-            if (dx > 0.001f) sr.flipX = true;
-            else if (dx < -0.001f) sr.flipX = false;
+            if (dx > 0.001f) 
+            { 
+                sr.flipX = true;
+            } 
+            else if (dx < -0.001f)
+            {
+                sr.flipX = false;
+            } 
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Only react to the player's main body (ignore child triggers)
         var pc = collision.GetComponentInParent<PlayerController>();
         if (pc == null) return;
 
-        // Use the player's rigidbody for velocity checks/bounce
         Rigidbody2D playerRb = collision.attachedRigidbody;
 
-        // Is the player above us and falling/downwards-ish?
         Vector2 toPlayer = (pc.transform.position - transform.position);
         bool playerAbove = toPlayer.y > stompHeightThreshold;
         bool playerFalling = playerRb != null && playerRb.velocity.y <= 0f;
 
         if (playerAbove && playerFalling)
         {
-            // Stomp kill
             if (playerRb != null)
                 playerRb.velocity = new Vector2(playerRb.velocity.x, bounceVelocity);
 
@@ -141,7 +135,6 @@ public class SeekerEnemy : MonoBehaviour
         }
         else
         {
-            // Side/bottom hit -> damage player
             var health = pc.GetComponent<Health>();
             if (health != null)
                 health.TakeDamage(damage);
