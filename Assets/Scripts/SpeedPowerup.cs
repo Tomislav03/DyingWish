@@ -35,7 +35,7 @@ public class SpeedPowerup : MonoBehaviour
 
         var pc = other.GetComponent<PlayerController>();
         if (pc != null)
-            StartCoroutine(ApplySpeed(pc));
+            pc.StartCoroutine(ApplySpeed(pc)); // <-- run on the PLAYER
 
         Destroy(gameObject);
     }
@@ -50,7 +50,7 @@ public class SpeedPowerup : MonoBehaviour
         float original = (float)field.GetValue(pc);
         field.SetValue(pc, original * speedMultiplier);
 
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSecondsRealtime(duration);
 
         if (pc != null)
             field.SetValue(pc, original);
